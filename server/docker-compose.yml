@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: mappin_database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Mappin@UTH # Mật khẩu tài khoản root
+      MYSQL_DATABASE: mappin                # Tự động tạo DB này khi bật lên
+      MYSQL_USER: admin                          # Tạo user thường để app kết nối
+      MYSQL_PASSWORD: Mappin@UTH # Mật khẩu user thường
+    ports:
+      - "3306:3306" # Mở cổng 3306 để kết nối từ MySQL Workbench ở máy cá nhân
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

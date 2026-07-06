@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">Mappin</string>
+
+    <!-- Login -->
+    <string name="login_title">Chào mừng trở lại</string>
+    <string name="login_subtitle">Lưu lại những địa điểm yêu thích của bạn</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Mật khẩu</string>
+    <string name="action_login">Đăng nhập</string>
+    <string name="action_register">Chưa có tài khoản? Đăng ký</string>
+    <string name="error_email">Email không hợp lệ</string>
+    <string name="error_password">Mật khẩu tối thiểu 6 ký tự</string>
+
+    <!-- Register -->
+    <string name="register_title">Tạo tài khoản</string>
+    <string name="register_subtitle">Bắt đầu lưu những địa điểm yêu thích</string>
+    <string name="hint_full_name">Họ và tên</string>
+    <string name="action_register_submit">Đăng ký</string>
+    <string name="action_have_account">Đã có tài khoản? Đăng nhập</string>
+    <string name="error_full_name">Vui lòng nhập họ và tên</string>
+
+    <!-- Home -->
+    <string name="home_title">Địa điểm của tôi</string>
+    <string name="home_empty">Chưa có địa điểm nào.\nNhấn nút + để thêm địa điểm yêu thích!</string>
+    <string name="action_add_place">Thêm địa điểm</string>
+    <string name="action_logout">Đăng xuất</string>
+
+    <!-- Add place -->
+    <string name="add_title">Thêm địa điểm</string>
+    <string name="hint_name">Tên địa điểm</string>
+    <string name="hint_address">Địa chỉ</string>
+    <string name="hint_map_url">Link Google Maps</string>
+    <string name="helper_map_url">Dán link chia sẻ từ Google Maps (tùy chọn)</string>
+    <string name="action_paste">Dán</string>
+    <string name="hint_note">Ghi chú (tùy chọn)</string>
+    <string name="label_photo">Hình ảnh</string>
+    <string name="action_take_photo">Chụp / chọn ảnh</string>
+    <string name="label_category">Loại địa điểm</string>
+    <string name="label_rating">Đánh giá</string>
+    <string name="action_save">Lưu địa điểm</string>
+    <string name="error_name">Vui lòng nhập tên địa điểm</string>
+    <string name="saved_ok">Đã lưu địa điểm!</string>
+
+    <!-- Error log -->
+    <string name="error_email_empty">Email không được để trống</string>
+    <string name="error_full_name_empty">Họ và tên không được để trống</string>
+    <string name="error_password_empty">Mật khẩu không được để trống</string>
+
+</resources>
