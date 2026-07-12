@@ -19,7 +19,14 @@ import okhttp3.Response;
 public class MapLinkResolver {
     public static PlaceInfo parse(String expandedUrl) {
         PlaceInfo info = new PlaceInfo();
-        info.setMapUrl(expandedUrl);
+        // Giữ Feature ID (nằm trong phần path/data trước dấu '?'). Nếu URL quá dài
+        // (server giới hạn map_url <= 1000 ký tự) thì cắt bỏ query cho gọn.
+        String cleaned = expandedUrl;
+        if (cleaned != null && cleaned.length() > 900) {
+            int q = cleaned.indexOf('?');
+            if (q > 0) cleaned = cleaned.substring(0, q);
+        }
+        info.setMapUrl(cleaned);
 
         // Lấy đoạn giữa "/place/" và dấu "/" (hoặc "?") kế tiếp
         Matcher m = Pattern.compile("/place/([^/?]+)").matcher(expandedUrl);

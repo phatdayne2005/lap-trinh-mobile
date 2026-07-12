@@ -24,13 +24,14 @@ import com.example.mappin.model.Place;
 import com.example.mappin.model.PlaceInfo;
 import com.example.mappin.network.ApiClient;
 import com.example.mappin.network.MapLinkResolver;
+import com.example.mappin.util.ImageUtils;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +60,12 @@ public class AddPlaceActivity extends AppCompatActivity {
     private Place editingPlace;      // null = thêm mới
     private Uri pendingPhotoUri;     // ảnh vừa chọn/chụp, chờ upload
     private Uri cameraImageUri;      // uri tạm cho camera
+    // URL Google Maps ĐÃ RESOLVE (chứa Feature ID trỏ đích danh địa điểm/chi nhánh).
+    // Lưu cái này thay cho short link để mở bản đồ về đúng điểm ghim.
+    private String resolvedMapUrl;
+
+    // Nén ảnh chạy ở luồng nền để không giật UI
+    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
     // Chọn ảnh từ thư viện
     private final ActivityResultLauncher<String> pickImageLauncher =
@@ -211,13 +218,19 @@ public class AddPlaceActivity extends AppCompatActivity {
         }
         String bearer = "Bearer " + token;
 
+        // Ưu tiên URL đã resolve (có Feature ID -> mở đúng chi nhánh); nếu chưa resolve
+        // được thì dùng link người dùng nhập.
+        String finalMapUrl = (resolvedMapUrl != null && !resolvedMapUrl.isEmpty())
+                ? resolvedMapUrl
+                : (mapUrl.isEmpty() ? null : mapUrl);
+
         Place place = new Place(
                 name,
                 address.isEmpty() ? null : address,
                 category,
                 rating,
                 note.isEmpty() ? null : note,
-                mapUrl.isEmpty() ? null : mapUrl
+                finalMapUrl
         );
 
         Callback<Place> cb = new Callback<Place>() {
@@ -243,12 +256,28 @@ public class AddPlaceActivity extends AppCompatActivity {
         }
     }
 
-    // Sau khi tạo/sửa xong: nếu có ảnh mới thì upload rồi mới về Main
+    // Sau khi tạo/sửa xong: nếu có ảnh mới thì nén + upload rồi mới về Main
     private void afterSaved(String bearer, Place saved) {
         if (pendingPhotoUri != null && saved.getId() != null) {
-            MultipartBody.Part part = buildImagePart(pendingPhotoUri);
-            if (part != null) {
-                ApiClient.getApiService().uploadPhoto(bearer, saved.getId(), part).enqueue(new Callback<Place>() {
+            uploadPhotoCompressed(bearer, saved.getId(), pendingPhotoUri);
+        } else {
+            goToMain();
+        }
+    }
+
+    // Nén ảnh ở luồng nền -> tạo multipart -> upload
+    private void uploadPhotoCompressed(String bearer, int placeId, Uri uri) {
+        ioExecutor.execute(() -> {
+            byte[] data = ImageUtils.compress(this, uri);
+            runOnUiThread(() -> {
+                if (data == null) {
+                    Toast.makeText(this, "Lưu ok nhưng không đọc được ảnh", Toast.LENGTH_SHORT).show();
+                    goToMain();
+                    return;
+                }
+                RequestBody body = RequestBody.create(MediaType.parse("image/jpeg"), data);
+                MultipartBody.Part part = MultipartBody.Part.createFormData("file", "photo.jpg", body);
+                ApiClient.getApiService().uploadPhoto(bearer, placeId, part).enqueue(new Callback<Place>() {
                     @Override
                     public void onResponse(Call<Place> call, Response<Place> response) {
                         goToMain();
@@ -260,10 +289,14 @@ public class AddPlaceActivity extends AppCompatActivity {
                         goToMain();
                     }
                 });
-                return;
-            }
-        }
-        goToMain();
+            });
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ioExecutor.shutdown();
     }
 
     private void goToMain() {
@@ -285,21 +318,6 @@ public class AddPlaceActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    // Đọc ảnh từ Uri -> multipart part
-    private MultipartBody.Part buildImagePart(Uri uri) {
-        try (InputStream is = getContentResolver().openInputStream(uri)) {
-            if (is == null) return null;
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            byte[] chunk = new byte[8192];
-            int n;
-            while ((n = is.read(chunk)) != -1) buffer.write(chunk, 0, n);
-            RequestBody body = RequestBody.create(MediaType.parse("image/*"), buffer.toByteArray());
-            return MultipartBody.Part.createFormData("file", "photo.jpg", body);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     // ---------- Link Maps ----------
     private String extractUrl(String text) {
         Matcher m = Pattern.compile("https?://\\S+").matcher(text);
@@ -317,12 +335,15 @@ public class AddPlaceActivity extends AppCompatActivity {
         }
         tilMapUrl.setError(null);
         tilMapUrl.setHelperText("Đang lấy thông tin...");
+        resolvedMapUrl = null;   // xoá kết quả cũ trước khi resolve link mới
         MapLinkResolver.resolve(url, new MapLinkResolver.ResolveCallback() {
             @Override
             public void onResolved(PlaceInfo info) {
                 tilMapUrl.setHelperText(getString(R.string.helper_map_url));
                 if (info.getName() != null) etName.setText(info.getName());
                 if (info.getAddress() != null) etAddress.setText(info.getAddress());
+                // URL đã đi hết redirect (chứa Feature ID) -> lưu để mở đúng điểm ghim
+                if (info.getMapUrl() != null) resolvedMapUrl = info.getMapUrl();
             }
 
             @Override

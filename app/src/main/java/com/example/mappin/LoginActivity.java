@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.mappin.data.PlaceRepository;
 import com.example.mappin.data.TokenManager;
 import com.example.mappin.model.AuthResponse;
 import com.example.mappin.model.ErrorResponse;
@@ -71,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                         TokenManager tokenManager = new TokenManager(LoginActivity.this);
                         tokenManager.saveTokens(body.getAccessToken(), body.getRefreshToken());
+                        new PlaceRepository(LoginActivity.this).clearCache();   // bỏ cache tài khoản cũ
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();
                     } else {
