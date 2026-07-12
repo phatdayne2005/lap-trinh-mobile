@@ -65,7 +65,8 @@ public class PlaceDetailActivity extends AppCompatActivity {
 
         // Địa chỉ (ẩn nếu trống)
         if (place.getAddress() != null && !place.getAddress().isEmpty()) {
-            ((TextView) findViewById(R.id.tvDetailAddress)).setText(place.getAddress());
+            ((TextView) findViewById(R.id.tvDetailAddress))
+                    .setText(com.example.mappin.util.AddressUtils.stripPostalCode(place.getAddress()));
         } else {
             findViewById(R.id.addressBlock).setVisibility(View.GONE);
         }
@@ -80,8 +81,8 @@ public class PlaceDetailActivity extends AppCompatActivity {
         // Ảnh (nếu có) - bấm vào để xem toàn cảnh
         String imageUrl = ApiClient.fullImageUrl(place.getImageUrl());
         if (imageUrl != null) {
+            findViewById(R.id.photoCard).setVisibility(View.VISIBLE);
             ImageView iv = findViewById(R.id.ivDetailPhoto);
-            iv.setVisibility(View.VISIBLE);
             Glide.with(this).load(imageUrl).into(iv);
             iv.setOnClickListener(v -> {
                 Intent i = new Intent(this, FullscreenImageActivity.class);

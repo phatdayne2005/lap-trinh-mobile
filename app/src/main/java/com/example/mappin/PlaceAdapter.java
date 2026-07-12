@@ -46,7 +46,8 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = places.get(position);
         holder.tvName.setText(place.getPlaceName());
-        holder.tvAddress.setText(place.getAddress() != null ? place.getAddress() : "");
+        holder.tvAddress.setText(place.getAddress() != null
+                ? com.example.mappin.util.AddressUtils.stripPostalCode(place.getAddress()) : "");
         holder.tvCategory.setText(categoryLabel(place.getCategory()));
         holder.tvRating.setText(place.getRating() != null ? "★ " + place.getRating() : "");
 

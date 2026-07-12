@@ -36,6 +36,8 @@
     <string name="label_photo">Hình ảnh</string>
     <string name="action_take_photo">Chụp / chọn ảnh</string>
     <string name="label_category">Loại địa điểm</string>
+    <string name="label_address">Địa chỉ</string>
+    <string name="label_note">Ghi chú</string>
     <string name="label_rating">Đánh giá</string>
     <string name="action_save">Lưu địa điểm</string>
     <string name="error_name">Vui lòng nhập tên địa điểm</string>

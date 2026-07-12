@@ -44,7 +44,8 @@ public class MapLinkResolver {
             int comma = decoded.indexOf(',');
             if (comma > 0) {
                 info.setName(decoded.substring(0, comma).trim());
-                info.setAddress(decoded.substring(comma + 1).trim());
+                info.setAddress(com.example.mappin.util.AddressUtils
+                        .stripPostalCode(decoded.substring(comma + 1).trim()));
             } else {
                 info.setName(decoded.trim());
             }
